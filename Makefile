@@ -19,7 +19,7 @@ blob:
 	clean 
 	elf_loader
 	gcc $(CFLAGS) -pie -fPIE -fPIC -shared app/blob.c $(LDFLAGS) -o blob
-	g++ $(CFLAGS_BLOB) $(CFLAGS) app/app_blob.cpp -o app-blob -ldl
+	g++ $(CFLAGS_BLOB) app/app_blob.cpp -o app-blob -ldl
 
 elf_loader:
 	clean
