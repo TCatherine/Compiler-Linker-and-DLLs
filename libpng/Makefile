@@ -569,9 +569,9 @@ AWK = mawk
 CC = gcc
 CCAS = gcc
 CCASDEPMODE = depmode=gcc3
-CCASFLAGS = -g -O2
+CCASFLAGS = -fPIC -fno-stack-protector
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O2
+CFLAGS = -fPIC -fno-stack-protector
 CPP = gcc -E
 CPPFLAGS = 
 CYGPATH_W = echo

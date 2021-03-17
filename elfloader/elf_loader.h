@@ -69,9 +69,11 @@ struct elf_module {
     struct list_head list;
 };
 
+
+bool read_elf_file(const char *fname, void **buf, size_t *len);
 struct elf_module *load_elf_module(const char *name, const void *elf_data, size_t elf_len);
 void unload_elf_module(const char *name);
-// int run_elf_module(struct elf_module *m, const char *func);
-int run_elf_module(struct elf_module *m, const char *func, int argc, char** argv);
+void* run_elf_module(struct elf_module *m, const char *func);
+
 
 #endif /* _ELF_LOADER_H_ */

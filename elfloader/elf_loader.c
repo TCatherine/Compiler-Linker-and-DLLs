@@ -215,8 +215,9 @@ static ElfW(Sym) *elfhash_lookup(struct elf_module *m, const char *name)
     uint32_t hash = elfhash(name);
     ElfW(Sym) *symtab = m->symtab;
     const char *strtab = m->strtab;
+    printf("\n%s \n", strtab);
 
-    LOG_DEBUG("SEARCH %s in %s@0x%zx %08x %zu", name, m->name, m->base, hash, hash % m->nbucket);
+    LOG_DEBUG("SEARCH %s in %s@0x%zx %08x %zu", name, m->name, m->base, hash, /*hash %*/ m->nbucket);
 
     for (n = m->bucket[hash % m->nbucket]; n != 0; n = m->chain[n]) {
         ElfW(Sym) *s = symtab + n;
@@ -1003,91 +1004,23 @@ void unload_elf_module(const char *name)
 }
 
 
-
-#define N_CLOCK 0
-#define N_PUTS 1
-#define N_STRLEN 2
-#define N_STRRCHR 3
-#define N_STPCPY 4
-#define N_STRSTR 5
-#define N_GETENV 6
-#define N_MALLOC 7
-#define N_STRNCMP 8
-#define N_MEMCHR 9
-#define N_STRCMP 10
-#define N_MEMSET 11
-#define N_STRNCPY 12
-#define N_MMAP 13
-#define N_REALLOC 14
-#define N_MEMMOVE 15
-#define N_FREXP 16
-#define N_MODF 17
-#define N_POW 18
-#define N_MEMCPY 19
-#define N_FPUTC 20
-#define N_MEMCMP 21
-#define N_FREAD 22
-#define N_GMTIME 23
-#define N_FOPEN 24
-#define N_FERROR 25
-#define N_FCLOSE 26
-#define N_REMOVE 27
-#define N_MUNMAP 28
-#define N_FREE 29
-#define N_FWRITE 30
-#define N_FFLUSH 31
-#include <time.h>
-#include <math.h>
-
-
-// typedef int (*main_func_t)(void);
 typedef int (*main_func_t)(int argc, char** argv, void **functions);
 
-int run_elf_module(struct elf_module *m, const char *func, int argc, char** argv)
+void* run_elf_module(struct elf_module *m, const char *func)
 {
     ElfW(Sym *) s = lookup_symbol_in_module(m, func);
     main_func_t fn;
 
-
     if (!s) {
         LOG_ERR("not found function %s", func);
-        return -1;
+        return NULL;
     }
 
-    void* functions[39];
     fn = (void *)(m->load_bias + s->st_value);
 
-    functions[N_CLOCK]=clock;
-    functions[N_PUTS]=puts;
-    functions[N_STRRCHR]=strrchr;
-    functions[N_STPCPY]=stpcpy;
-    functions[N_STRSTR]=strstr;
-    functions[N_GETENV]=getenv;
-    functions[N_STRNCMP]=strncmp;
-    functions[N_MEMCHR]=memchr;
-    functions[N_STRCMP]=strcmp;
-    functions[N_MUNMAP]=munmap;
-    functions[N_MMAP]=mmap;
-    functions[N_REALLOC]=realloc;
-    functions[N_MEMMOVE]=memmove;
-    functions[N_FREXP]=frexp;
-    functions[N_MODF]=modf;
-    functions[N_POW]=pow;
-    functions[N_FPUTC]=fputc;
-    functions[N_MEMCMP]=memcmp;
-    functions[N_FREAD]=fread;
-    functions[N_FOPEN]=fopen;
-    functions[N_FERROR]=ferror;
-    functions[N_FCLOSE]=fclose;
-    functions[N_REMOVE]=remove;
-    functions[N_FWRITE]=fwrite;
-    functions[N_FFLUSH]=fflush;
-    functions[N_MEMCPY]=memcpy;
-    functions[N_MALLOC]=malloc;
-    functions[N_FREE]=free;
-    functions[N_MEMSET]=memset;
-    functions[N_STRNCPY]=strncpy;
-    functions[N_STRLEN]=strlen;
+  printf("LOAD\n\n");
 
-    return fn(argc, argv, functions);
+    LOG_INFO("module %s run done", m->name);
+
+    return fn;
 }

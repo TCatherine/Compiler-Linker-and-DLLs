@@ -82,14 +82,31 @@ char* load_libpng(){
 		return dlerror();
 	}
     
+	char* error;
 	*(void**)(&l_png_create_write_struct) = dlsym(so_libpng, "png_create_write_struct");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_png_init_io) = dlsym(so_libpng, "png_init_io");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_png_create_info_struct) = dlsym(so_libpng, "png_create_info_struct");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_png_set_IHDR) = dlsym(so_libpng, "png_set_IHDR");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_png_write_end) = dlsym(so_libpng, "png_write_end");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_png_set_longjmp_fn) = dlsym(so_libpng, "png_set_longjmp_fn");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_png_set_rows) = dlsym(so_libpng, "png_set_rows");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_png_write_png) = dlsym(so_libpng, "png_write_png");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_png_destroy_write_struct) = dlsym(so_libpng, "png_destroy_write_struct");
 
 	return dlerror();
@@ -104,16 +121,36 @@ char* load_freetypelib() {
 		return dlerror();
 	}
 
+	char* error;
 	*(void**)(&l_FT_Init_FreeType) = dlsym(so_zlib, "FT_Init_FreeType");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_FT_New_Face) = dlsym(so_zlib, "FT_New_Face");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_FT_Set_Pixel_Sizes) = dlsym(so_zlib, "FT_Set_Pixel_Sizes");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_FT_Load_Char) = dlsym(so_zlib, "FT_Load_Char");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_FT_Get_Char_Index) = dlsym(so_zlib, "FT_Get_Char_Index");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_FT_Load_Glyph) = dlsym(so_zlib, "FT_Load_Glyph");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_FT_Render_Glyph) = dlsym(so_zlib, "FT_Render_Glyph");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_FT_Get_Glyph) = dlsym(so_zlib, "FT_Get_Glyph");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_FT_Glyph_To_Bitmap) = dlsym(so_zlib, "FT_Glyph_To_Bitmap");
+	if ((error=dlerror())!=NULL)
+		return error;
 	*(void**)(&l_FT_Done_Glyph) = dlsym(so_zlib, "FT_Done_Glyph");
+
 	return dlerror();
 }
 
@@ -132,9 +169,9 @@ FT_Glyph get_glyph(FT_Face face, uint32_t charcode)
     return glyph;
 }
 
-void get_size(std::wstring text, unsigned int *maxH, unsigned int *maxW, unsigned int *bottom, unsigned int *left){
-	*maxH=0;
-	*maxW=0;
+void get_size(std::wstring text, unsigned int *max_h, unsigned int *max_w, unsigned int *bottom, unsigned int *left){
+	*max_h=0;
+	*max_w=0;
 	*left=0;
 	*bottom=0;
 
@@ -150,8 +187,8 @@ void get_size(std::wstring text, unsigned int *maxH, unsigned int *maxW, unsigne
 			
 			*left = std::max(*left, static_cast<unsigned int>(abs(bitmap_glyph->left)));
 			*bottom = std::max(*bottom, static_cast<unsigned int>(bitmap.rows-bitmap_glyph->top));
-			*maxH =  std::max(*maxH, static_cast<unsigned int>(bitmap_glyph->top));
-			*maxW =  std::max(*maxW, static_cast<unsigned int>(bitmap.width));
+			*max_h =  std::max(*max_h, static_cast<unsigned int>(bitmap_glyph->top));
+			*max_w =  std::max(*max_w, static_cast<unsigned int>(bitmap.width));
 
 			 FT_Done_Glyph(glyph);
 		}
@@ -222,7 +259,6 @@ int main(int argc, char *argv[]){
 	std::wstring w_text(text.begin(), text.end());
 
     #ifdef _DYNAMIC_
-
     char* ret_error;
 
 	if ((ret_error=load_zlib())){
@@ -243,8 +279,7 @@ int main(int argc, char *argv[]){
 		return 1;
 	}
 
-	std::cout << "Load Time: " << clock()-startTime << 
-	" ticks (" << (clock()-startTime)/CLOCKS_PER_SEC <<  " s)" << std::endl;
+	std::cout << "Load Time: " << clock()-startTime << std::endl;
 
     #endif
 
@@ -264,29 +299,29 @@ int main(int argc, char *argv[]){
 
 	unsigned int height;
 	unsigned int width;
-	unsigned int leftMargin;
-	unsigned int bottomMargin;
+	unsigned int left_space;
+	unsigned int bottom_space;
 
-	get_size(w_text, &height, &width, &bottomMargin, &leftMargin);
+	get_size(w_text, &height, &width, &bottom_space, &left_space);
 
 	unsigned int space_char = FONT_SIZE / 2;
-	unsigned int pos_x = leftMargin;
+	unsigned int pos_x = left_space;
 	unsigned int pos_y = 0;
 
-	unsigned int height_string = height + bottomMargin + LINE_SPACING;
+	unsigned int height_string = height + bottom_space + LINE_SPACING;
 	unsigned int shift = FONT_SIZE / 6;
 	unsigned int number_string = w_text.length() / MAX_CHAR_IN_STRING;
 	if (w_text.length() % MAX_CHAR_IN_STRING!=0) 
 		number_string++;
 
-	height = LINE_SPACING + number_string * height_string + bottomMargin;
+	height = LINE_SPACING + number_string * height_string + bottom_space;
 
 	unsigned int num_letter_string = 0;
-	if (MAX_CHAR_IN_STRING > w_text.length())
-		num_letter_string = w_text.length() - 1;
+	if (MAX_CHAR_IN_STRING > text.length())
+		num_letter_string = text.length() - 1;
 	else num_letter_string = MAX_CHAR_IN_STRING-1;
 
-	width = (width+leftMargin) * num_letter_string;
+	width = (width+left_space) * num_letter_string;
 
 	std::vector<unsigned char> line(3 * width, 0xFF);
 	std::vector<std::vector<unsigned char>> alfaImage(width, line);
@@ -296,7 +331,7 @@ int main(int argc, char *argv[]){
 		if( i % MAX_CHAR_IN_STRING==0 ){
 			if (new_width < pos_x) new_width=pos_x;
 			pos_y += height_string;
-			pos_x = leftMargin;
+			pos_x = left_space;
 		}
 
 		if(w_text[i]==L' '){
@@ -322,7 +357,7 @@ int main(int argc, char *argv[]){
 				}
 			}
 
-		pos_x += bitmap.width + bitmap_glyph->left + leftMargin;
+		pos_x += bitmap.width + bitmap_glyph->left + left_space;
 		 FT_Done_Glyph(glyph);
 	}
 	
@@ -339,7 +374,6 @@ int main(int argc, char *argv[]){
 
 	std::cout << "Procces finished!" << std::endl;
 
-	std::cout << "Total Time: " << endTime-startTime << 
-	" ticks (" << (endTime-startTime)/CLOCKS_PER_SEC <<  " s)" << std::endl;
+	std::cout << "Total Time: " << endTime-startTime << std::endl;
 	return 0;
 }

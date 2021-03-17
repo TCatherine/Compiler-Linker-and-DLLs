@@ -41,34 +41,34 @@ struct list_head {
 } while (0)
 
 /*
- * Insert a new entry between two known consecutive entries. 
+ * Insert a new1 entry between two known consecutive entries. 
  *
  * This is only for internal list manipulation where we know
  * the prev/next entries already!
  */
-void __list_add(struct list_head * new,
+void __list_add(struct list_head * new1,
 	struct list_head * prev,
 	struct list_head * next);
 
 /**
- * list_add - add a new entry
- * @new: new entry to be added
+ * list_add - add a new1 entry
+ * @new1: new1 entry to be added
  * @head: list head to add it after
  *
- * Insert a new entry after the specified head.
+ * Insert a new1 entry after the specified head.
  * This is good for implementing stacks.
  */
-void list_add(struct list_head *new, struct list_head *head);
+void list_add(struct list_head *new1, struct list_head *head);
 
 /**
- * list_add_tail - add a new entry
- * @new: new entry to be added
+ * list_add_tail - add a new1 entry
+ * @new1: new1 entry to be added
  * @head: list head to add it before
  *
- * Insert a new entry before the specified head.
+ * Insert a new1 entry before the specified head.
  * This is useful for implementing queues.
  */
-void list_add_tail(struct list_head *new, struct list_head *head);
+void list_add_tail(struct list_head *new1, struct list_head *head);
 
 /*
  * Delete a list entry by making the prev/next entries
@@ -101,7 +101,7 @@ int list_empty(struct list_head *head);
 
 /**
  * list_splice - join two lists
- * @list: the new list to add.
+ * @list: the new1 list to add.
  * @head: the place to add it in the first list.
  */
 void list_splice(struct list_head *list, struct list_head *head);
@@ -215,7 +215,7 @@ int hlist_fake(struct hlist_node *h);
  * Move a list from one list head to another. Fixup the pprev
  * reference of the first entry if it exists.
  */
-void hlist_move_list(struct hlist_head *old, struct hlist_head *new);
+void hlist_move_list(struct hlist_head *old, struct hlist_head *new1);
 
 #define hlist_entry(ptr, type, member) \
     ((type *)((char *)(ptr)-(unsigned long)(&((type *)0)->member)))

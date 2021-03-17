@@ -8,7 +8,7 @@
 #include "elf_loader.h"
 #include "wheelc/wheelc.h"
 
-static bool read_file(const char *fname, void **buf, size_t *len)
+bool read_elf_file(const char *fname, void **buf, size_t *len)
 {
     int fd = -1;
     struct stat st;
@@ -63,41 +63,4 @@ out_free:
     if (fd >= 0)
         close(fd);
     return false;
-}
-
-int main(int argc, char *argv[])
-{
-    struct elf_module *m;
-    void *bin;
-    size_t len;
-    char fname[]="blob.bin";
-    const char *bname;
-
-    // if (argc < 2) {
-    //     LOG_ERR("need name of blob");
-    //     return 0;
-    // }
-
-    // fname = argv[1];
-    bname = filename_from_path(fname);
-
-    if (!read_file(fname, &bin, &len)) {
-        free(bin);
-        return 0;
-    }
-
-    m = load_elf_module(bname, bin, len);
-    if (m == NULL) {
-        free(bin);
-        LOG_ERR("load_elf_module %s failed", bname);
-        return 0;
-    }
-
-    free(bin);
-
-    run_elf_module(m, "main", argc, argv);
-
-    LOG_INFO("module %s run done", m->name);
-
-    return 0;
 }

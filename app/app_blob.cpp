@@ -1,23 +1,30 @@
 #include <iostream>
-#include <string>
-#include <dlfcn.h>
-#include <time.h>
-#include <math.h>
-#include <cstring>
+#include <ctime>
+#include <cmath>
+#include <string.h>
+#include <unistd.h>
+#include <sys/mman.h>
 #include <wchar.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h> 
+#include <sys/stat.h>
+#include <setjmp.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include "./../elfloader/elf_loader.h"
+#include <dlfcn.h>
+#include <string>
 
-#include "ft2build.h"
-#include "png.h"
-
-#include FT_FREETYPE_H
-#include FT_GLYPH_H
 
 enum function_order { nPrintf, nStrlen, nWcslen, nBtows, 
-nFopen, nFclose, nMemcpy, nMemset,
-nFTinit, nFTnewface, nFTsetpixelsize, nFTloadchar, nFTgetcharidx,
-nFTgetglyph, nFTloadglyph, nFTrenderglyph, nFTglyphtobitmap, nFTdoneglyph,
-nPNGcws, nPNGcis, nPNGdws, nPNGjmpbuf, nPNGlongjmp, 
-nPNGinit, nPNGsetihdr, nPNGsetrows, nPNGwp, nPNGwe};
+nFopen, nFclose, nMemcpy, nMemset, nFstat,
+nFree, nMalloc, nPuts, nGetenv, nMemmove, nStrcmp, nLongjmp,
+nStrstr, nStrtol, nMemcmp, nStrncpy, nStrncmp, nStrcat, nQsort,
+nStrrchr, nMemchr, nSprintf, nStrcpy, nSetjmp, nRealloc, nMunmap,
+nOpen, nClose, nRead, nFcntl, nMmap, nFloor, nPow, nFrexp, nModf,
+nFprintf, nFputc, nAtof, nAbort, nFread, nStrerror, nGmtime, nFflush,
+nFerror, nFwrite, nRemove, nStderr};
 
 static const std::string path_blob = "blob";
 static const std::string function_name = "main";
@@ -90,6 +97,7 @@ int main(int argc, char *argv[]){
 	}
 
     struct elf_module *m;
+    //void* m;
     void *bin;
     size_t len;
     if (!l_read_elf_file(path_blob.c_str(), &bin, &len)) {
@@ -105,43 +113,71 @@ int main(int argc, char *argv[]){
     }
 
     free(bin);
+    main_func_t fn = (main_func_t)(m->entry);
+    std::cout << "Address entry point: " << std::hex << m->entry << std::endl;
+    
+    
+        //*(void**)(&fn)=l_run_elf_module(m, function_name.c_str());
 
-    main_func_t fn;
-    *(void**)(&fn)=l_run_elf_module(m, function_name.c_str());
-
-    void* functions[30];
+    typedef const char * (*strstr_t)( const char * string1, const char * string2 );
+    typedef const char * (*strrchr_t)( const char * string, int symbol );
+    typedef const void * (*memchr_t)( const void * memptr, int val, size_t num );
+    void* functions[51];
     functions[nFopen]=(void*)(fopen);
     functions[nFclose]=(void*)(fclose);
     functions[nMemcpy]=(void*)(memcpy);
     functions[nMemset]=(void*)(memset);
     functions[nStrlen]=(void*)(strlen);
-    functions[nPrintf]=(void*)(printf);
+    functions[nPrintf]=(void*)printf;
     functions[nBtows]= (void*)(btowc);
     functions[nWcslen]=(void*)(wcslen);
+    functions[nFstat]=(void*)fstat;
+    functions[nFree]=(void*)free;
+    functions[nMalloc]=(void*)malloc;
+    functions[nPuts]=(void*)puts;
+    functions[nGetenv]=(void*)getenv;
+    functions[nMemmove]=(void*)memmove;
+    functions[nStrcmp]=(void*)strcmp;
+    functions[nLongjmp]=(void*)longjmp;
+    functions[nStrstr]=(void*)(strstr_t)strstr;
+    functions[nStrtol]=(void*)strtol;
+    functions[nMemcmp]=(void*)memcmp;
+    functions[nStrncpy]=(void*)strncpy;
+    functions[nStrncmp]=(void*)strncmp;
+    functions[nStrcat]=(void*)strcat;
+    functions[nQsort]=(void*)qsort;
+    functions[nStrrchr]=(void*)(strrchr_t)strrchr;
+    functions[nMemchr]=(void*)(memchr_t)memchr;
+    functions[nSprintf]=(void*)sprintf;
+    functions[nStrcpy]=(void*)strcpy;
+    functions[nSetjmp]=(void*)setjmp;
+    functions[nRealloc]=(void*)realloc;
+    functions[nMunmap]=(void*)munmap;
+    functions[nOpen]=(void*)open;
+    functions[nClose]=(void*)close;
+    functions[nRead]=(void*)read;
+    functions[nFcntl]=(void*)fcntl;
+    functions[nMmap]=(void*)mmap;
+    functions[nFloor]=(void*)floor;
+    functions[nPow]=(void*)pow;
+    functions[nFrexp]=(void*)frexp;
+    functions[nModf]=(void*)modf;
+    functions[nFprintf]=(void*)fprintf;
+    functions[nFputc]=(void*)fputc;
+    functions[nAtof]=(void*)atof;
+    functions[nAbort]=(void*)abort;
+    functions[nFread]=(void*)fread;
+    functions[nStrerror]=(void*)strerror;
+    functions[nGmtime]=(void*)gmtime;
+    functions[nFflush]=(void*)fflush;
+    functions[nFerror]=(void*)ferror;
+    functions[nFwrite]=(void*)fwrite;
+    functions[nRemove]=(void*)remove;
+    functions[nStderr]=(void*)stderr;
 
-    // functions[nFTinit]=(void*)FT_Init_FreeType;
-    // functions[nFTnewface]=(void*)FT_New_Face;
-    // functions[nFTsetpixelsize]=(void*)FT_Set_Pixel_Sizes;
-    // functions[nFTloadchar]=(void*)FT_Load_Char;
-    // functions[nFTgetglyph]=(void*)FT_Get_Glyph;
-    // functions[nFTloadglyph]=(void*)FT_Load_Glyph;
-    // functions[nFTrenderglyph]=(void*)FT_Render_Glyph;
-    // functions[nFTglyphtobitmap]=(void*)FT_Glyph_To_Bitmap;
-    // functions[nFTdoneglyph]=(void*)FT_Done_Glyph;
-    // functions[nFTgetcharidx]=(void*)FT_Get_Char_Index;
-
-    // functions[nPNGcws]=(void*)png_create_write_struct;
-    // functions[nPNGcis]=(void*)png_create_info_struct;
-    // functions[nPNGdws]=(void*)png_destroy_write_struct;
-    // functions[nPNGjmpbuf]=(void*)png_set_longjmp_fn;
-    // functions[nPNGlongjmp]=(void*)longjmp;
-    // functions[nPNGinit]=(void*)png_init_io;
-    // functions[nPNGsetihdr]=(void*)png_set_IHDR;
-    // functions[nPNGsetrows]=(void*)png_set_rows;
-    // functions[nPNGwp]=(void*)png_write_png;
-    // functions[nPNGwe]=(void*)png_write_end;
-
-
+    char buf[100];
+    ((void* (*)(void*, int, size_t))functions[nMemset])(buf, 0, 100);
+    printf("There are not in BLOB!!\n");
     fn(argc, argv, functions);
 
     
